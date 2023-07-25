@@ -1,0 +1,19 @@
+# Copyright (C) 2023-2024 Asephri. All rights reserved.
+
+end User agreement license EULA
+
+You may not redistribute or copy this executable of the game.
+You may not redistribute modifications of the executable.
+
+You may back-up a copy of the executable and its associated files for your own purposes of data protection.
+
+You may not redistribute the created back-up.
+
+All .ogg files found in music & sounds are free to use personally and cannot be used commercially or professionally or sold in any way.
+
+ALL sprites (.png files) are free to use personally and cannot be used commercially or professionally or sold in any way.
+
+Credits:
+
+https://www.libsdl.org/ for the necessary binaries of SDL2 held under the Zlib license. 
+THE SDL2 BINARIES ARE THE ONLY FILES SUBJECT TO THIS
