@@ -64,5 +64,6 @@ static void loadSounds(void)
     sounds[SND_ENEMY_FIRE] = Mix_LoadWAV("sound/voidfighter - Track 03 (EnemyFire).ogg");
     sounds[SND_PLAYER_DIE] = Mix_LoadWAV("sound/voidfighter - Track 04 (Explosion).ogg");
     sounds[SND_ENEMY_DIE] = Mix_LoadWAV("sound/voidfighter - Track 05 (EnemyDeath).ogg");
-}
+    sounds[SND_POINTS] = Mix_LoadWAV("sound/voidfighter - Track 06 (points).ogg");
+}   
 /* ---------- */

@@ -47,6 +47,9 @@ static void drawfire(void);
 static void dofire(void);
 static void addfire(Entity *e);
 static void drawHud(void);
+static void doPointsSphere(void);
+static void addPointsSphere(int x, int y);
+static void drawPointsSphere(void);
 
 /* Variables */
 static Entity *player;
@@ -61,6 +64,7 @@ static SDL_Texture *fireTexture;
 static SDL_Texture *hudTexture;
 static SDL_Texture *hudeffectsTexture;
 static SDL_Texture* hudscreenTexture;
+static SDL_Texture* pointsTexture;
 static int enemySpawnTimer;
 static int stageResetTimer;
 static int backgroundX;
@@ -70,6 +74,7 @@ static int hudscreenX;
 static Star stars[MAX_STARS];
 static int highscore;
 static int HUD_HEALTH_BUFFER[3];
+static int POINT_RESULT_BUFFER;
 
 /* ----- Stage Creation ----- */
 
@@ -87,6 +92,7 @@ void initStage(void)
     stage.debrisTail = &stage.debrisHead;
     stage.trailTail = &stage.trailHead;
     stage.fireTail = &stage.fireHead;
+    stage.pointsTail = &stage.pointsHead;
 
     // Load textures
     bulletTexture = loadTexture("gfx/playerBullet.png");
@@ -100,6 +106,7 @@ void initStage(void)
     hudTexture = loadTexture("gfx/hud.png");
     hudeffectsTexture = loadTexture("gfx/hudeffects.png");
     hudscreenTexture = loadTexture("gfx/hudscreen.png");
+    pointsTexture = loadTexture("gfx/points.png");
 
     // Load Music
     loadMusic("music/voidfighter - Track 01 (deepspace-01).ogg");
@@ -169,6 +176,7 @@ static void resetStage(void)
     stage.debrisTail = &stage.debrisHead;
     stage.trailTail = &stage.trailHead;
     stage.fireTail = &stage.fireHead;
+    stage.pointsTail = &stage.pointsHead;
 
     // Reset score counter.
     stage.score = 0;
@@ -261,7 +269,8 @@ static void logic(void)
 	doStars();
 	doPlayer();
 	doEnemies();
-	doFighters();
+    doFighters();
+    doPointsSphere();
 	doBullets();
 	doExplosions();
 	doDebris(); 
@@ -362,6 +371,7 @@ static void fireBullet(void)
     bullet->health = 1;
     bullet->texture = bulletTexture;
     bullet->side = SIDE_PLAYER;
+
     SDL_QueryTexture(bullet->texture, NULL, NULL, &bullet->w, &bullet->h);
 
     player->reload = PLAYER_RELOAD_TIME;
@@ -686,6 +696,8 @@ static int bulletHitFighter(Entity *b)
             }
             else
             {
+             
+                addPointsSphere(e->x + e->w / 2, e->y + e->h / 2);
                 playSound(SND_ENEMY_DIE, CH_ANY);
 
                 //award points for score.
@@ -713,6 +725,104 @@ static int bulletHitFighter(Entity *b)
 }
 /* ---------- */
 
+/* ----- Point Sphere creation ----- */
+
+/* Point Sphere behaviour. */
+
+static void doPointsSphere(void)
+{
+	Entity *e, *prev;
+
+	prev = &stage.pointsHead;
+
+for (e = stage.pointsHead.next; e != NULL; e = e->next)
+{
+    if (e->x < 32)
+    {
+        e->x = 32;
+        e->dx = -e->dx;
+    }
+
+    if (e->x + e->w > 928)
+    {
+        e->x = 928 - e->w;
+        e->dx = -e->dx;
+    }
+
+    if (e->y < 32)
+    {
+        e->y = 32;
+        e->dy = -e->dy;
+    }
+
+    if (e->y + e->h > 672)
+    {
+        e->y = 672 - e->h;
+        e->dy = -e->dy;
+    }
+
+
+		e->x += e->dx;
+		e->y += e->dy;
+
+		if (player != NULL && collision(e->x, e->y, e->w, e->h, player->x, player->y, player->w, player->h))
+		{
+			e->health = 0;
+
+			stage.score += POINT_RESULT_BUFFER;
+
+			highscore = MAX(stage.score, highscore);
+
+			playSound(SND_POINTS, CH_POINTS);
+		}
+
+		if (--e->health <= 0)
+		{
+			if (e == stage.pointsTail)
+			{
+				stage.pointsTail = prev;
+			}
+
+			prev->next = e->next;
+			free(e);
+			e = prev;
+		}
+
+		prev = e;
+	}
+}
+
+
+/* ---------- */
+
+/* Adding the Points spheres. */
+
+static void addPointsSphere(int x, int y)
+{
+    Entity *e;
+
+    e = malloc(sizeof(Entity));
+    memset(e, 0, sizeof(Entity));
+    stage.pointsTail->next = e;
+    stage.pointsTail = e;
+
+    e->x = x;
+    e->y = y;
+    e->dx = -(rand() % 5);
+    e->dy = (rand() % 5);
+    e->health = FPS * 10;
+    e->texture = pointsTexture;
+    e->side = SIDE_ENEMY;
+
+    SDL_QueryTexture(e->texture, NULL, NULL, &e->w, &e->h);
+
+    e->x -= e->w / 2;
+    e->y -= e->h / 2;
+
+}
+
+/* ---------- */
+
 /* Setting Enemy Spawning behaviour. */
 static void spawnEnemies(void)
 {
@@ -727,8 +837,8 @@ static void spawnEnemies(void)
         stage.fighterTail->next = enemy;
         stage.fighterTail = enemy;
 
-        enemy->x = SCREEN_WIDTH;
-        enemy->y = rand() % (SCREEN_HEIGHT - HUD_HEIGHT)  ;
+        enemy->x = HUDSCREEN_WIDTH;
+        enemy->y = rand() % (HUDSCREEN_HEIGHT)  ;
         enemy->texture = enemyTexture;
         SDL_QueryTexture(enemy->texture, NULL, NULL, &enemy->w, &enemy->h);
 
@@ -752,14 +862,14 @@ static void clipPlayer(void)
 
     if (player != NULL)
     {
-        if (player->x < SCREEN_BOUNDS*2)
+        if (player->x < HUDSCREEN_X)
         {
-            player->x = SCREEN_BOUNDS*2;
+            player->x = HUDSCREEN_X;
         }
 
-        if (player->y < 0)
+        if (player->y < HUDSCREEN_Y)
         {
-            player->y = 0;
+            player->y = HUDSCREEN_Y;
         }
 
         if (player->x > SCREEN_WIDTH / 2 - SCREEN_BOUNDS*4)
@@ -767,13 +877,9 @@ static void clipPlayer(void)
             player->x = SCREEN_WIDTH / 2 - SCREEN_BOUNDS*4;
         }
 
-        if (player->y > (HUDSCREEN_HEIGHT)  - player->h - SCREEN_BOUNDS)
+        if (player->y > HUDSCREEN_HEIGHT)
         {
-            player->y = (HUDSCREEN_HEIGHT)  - player->h - SCREEN_BOUNDS;
-        }
-        if (player->y < (64) - player->h - SCREEN_BOUNDS)
-        {
-            player->y = (64) - player->h - SCREEN_BOUNDS;
+            player->y = HUDSCREEN_HEIGHT;
         }
     }
 }
@@ -789,26 +895,32 @@ static void clipEnemies(void)
     {
         if (e != player)
         {
-            if (e->y < 0)
+            if (e->x < HUDSCREEN_X)
             {
-                e->y = 0;
+                e->health=0;
             }
 
-            if (e->x > SCREEN_WIDTH - e->w - SCREEN_BOUNDS)
+            if (e->y < HUDSCREEN_Y)
             {
-                e->x = SCREEN_WIDTH - e->w - SCREEN_BOUNDS;
+                e->y = HUDSCREEN_Y;
             }
 
-            if (e->y > (HUDSCREEN_HEIGHT)   - e->h - SCREEN_BOUNDS)
+            if (e->x > HUDSCREEN_WIDTH)
             {
-                e->y = (HUDSCREEN_HEIGHT)   - e->h - SCREEN_BOUNDS;
+                e->x = HUDSCREEN_WIDTH;
             }
-            if (e->y < (64) - e->h - SCREEN_BOUNDS)
+
+            if (e->y > HUDSCREEN_HEIGHT)
             {
-                e->y = (64) - e->h - SCREEN_BOUNDS;
+                e->y = HUDSCREEN_HEIGHT;
+            }
+            if (e->y > HUDSCREEN_HEIGHT)
+            {
+                e->y = HUDSCREEN_HEIGHT;
             }
         }
-    }
+    }    
+
 }
 /* ---------- */
 
@@ -1226,6 +1338,92 @@ static void drawHud(void)
 }
 /* ---------- */
 
+/* Rendering the PointSpheres. */
+static void drawPointsSphere(void)
+{
+    Entity *e;
+
+    for (e= stage.pointsHead.next; e != NULL ; e = e->next)
+    {
+        int POINTHEALTH;
+        int POINT_RESULT;
+        POINTHEALTH = e->health;
+        //POINTX = e->x;
+        //POINTY = e->y;
+        blit(e->texture, e->x, e->y);
+        //drawText(POINTX, POINTY, 255, 255,255, "point: %03d", POINTHEALTH);
+        switch (POINTHEALTH)
+        {
+        case 600:        
+        pointsTexture = loadTexture("gfx/points.png");
+        e->texture = pointsTexture;
+        POINT_RESULT = 10;
+        POINT_RESULT_BUFFER = POINT_RESULT;
+        case 540:
+        pointsTexture = loadTexture("gfx/points10.png");
+        e->texture = pointsTexture;
+        POINT_RESULT = 9;
+        POINT_RESULT_BUFFER = POINT_RESULT;
+        break;
+        case 480:
+        pointsTexture = loadTexture("gfx/points9.png");
+        e->texture = pointsTexture;
+        POINT_RESULT = 8;
+        POINT_RESULT_BUFFER = POINT_RESULT;
+        break;
+        case 420:
+        pointsTexture = loadTexture("gfx/points8.png");
+        e->texture = pointsTexture;
+        POINT_RESULT = 7;
+        POINT_RESULT_BUFFER = POINT_RESULT;
+        break;
+        case 360:
+        pointsTexture = loadTexture("gfx/points7.png");
+        e->texture = pointsTexture;
+        POINT_RESULT = 6;
+        POINT_RESULT_BUFFER = POINT_RESULT;
+        break;
+        case 300:
+        pointsTexture = loadTexture("gfx/points6.png");
+        e->texture = pointsTexture;
+        POINT_RESULT = 5;
+        POINT_RESULT_BUFFER = POINT_RESULT;
+        break;
+        case 240:
+        pointsTexture = loadTexture("gfx/points5.png");
+        e->texture = pointsTexture;
+        POINT_RESULT = 4;
+        POINT_RESULT_BUFFER = POINT_RESULT;
+        break;
+        case 180:
+        pointsTexture = loadTexture("gfx/points4.png");
+        e->texture = pointsTexture;
+        POINT_RESULT = 3;
+        POINT_RESULT_BUFFER = POINT_RESULT;
+        break;
+        case 120:
+        pointsTexture = loadTexture("gfx/points3.png");
+        e->texture = pointsTexture;
+        POINT_RESULT = 2;
+        POINT_RESULT_BUFFER = POINT_RESULT;
+        break;
+        case 60:
+        pointsTexture = loadTexture("gfx/points2.png");
+        e->texture = pointsTexture;
+        POINT_RESULT = 1;
+        POINT_RESULT_BUFFER = POINT_RESULT;
+        break;
+        case 30:
+        pointsTexture = loadTexture("gfx/points1.png");
+        e->texture = pointsTexture;
+        POINT_RESULT = 1;
+        POINT_RESULT_BUFFER = POINT_RESULT;
+        break;
+        }
+    }
+}
+
+
 /* ----- Rendering objects in order ----- */
 
 /* Basic Sorting. */
@@ -1233,6 +1431,7 @@ static void draw(void)
 {
     drawBackground();
     drawStars();
+    drawPointsSphere();
     drawFighters(); // Draw the player and enemy entities.
     drawDebris();
     drawExplosions();

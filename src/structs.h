@@ -108,6 +108,8 @@ typedef struct
 	Debris    debrisHead, *debrisTail;
 	trail trailHead, *trailTail;
 	fire fireHead, *fireTail;
+	Entity pointsHead, *pointsTail;
+
 	int score; // Holds the current score
 } Stage;
 /* ---------- */

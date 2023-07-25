@@ -20,8 +20,10 @@ Copyright (C) 2023-2024 Asephri. All rights reserved.
 #define HUD_HEIGHT 128
 
 /* Hudscreen Bounds. */
-#define HUDSCREEN_WIDTH 960
-#define HUDSCREEN_HEIGHT 704
+#define HUDSCREEN_WIDTH 928
+#define HUDSCREEN_HEIGHT 672
+#define HUDSCREEN_X 32
+#define HUDSCREEN_Y 32
 
 /* Screen Resolution. */
 #define SCREEN_WIDTH  1024
@@ -76,7 +78,8 @@ enum ChannelType
 {
 	CH_ANY = -1,
 	CH_PLAYER,
-	CH_ENEMY_FIRE
+	CH_ENEMY_FIRE,
+	CH_POINTS
 };
 
 enum SoundType
@@ -85,6 +88,7 @@ enum SoundType
 	SND_ENEMY_FIRE,
 	SND_PLAYER_DIE,
 	SND_ENEMY_DIE,
+	SND_POINTS,
 	SND_MAX
 };
 
