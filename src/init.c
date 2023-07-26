@@ -8,7 +8,13 @@ Copyright (C) 2023-2024 Asephri. All rights reserved.
 
 /* Headers. */
 #include "common.h"
+#include "draw.h"
+#include "hud.h"
+#include "background.h"
+#include "highscores.h"
 #include "init.h"
+#include "sound.h"
+#include "text.h"
 
 /* Externs. */
 extern App app;
@@ -55,6 +61,25 @@ void initSDL(void)
 	SDL_ShowCursor(0);
 }
 /* ---------- */
+
+void initGame(void)
+{
+	initBackground();
+
+	initStars();
+
+	initSounds();
+
+	initFonts();
+
+	initHud();
+
+	initHighscoreTable();
+
+	loadMusic("music/voidfighter - Track 01 (deepspace-01).ogg");
+
+	playMusic(1);
+}
 
 /* Cleaning up the client. */
 void cleanup(void)

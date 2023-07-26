@@ -5,15 +5,14 @@ Copyright (C) 2023-2024 Asephri. All rights reserved.
 /* Headers. */
 #include "common.h"
 #include "draw.h"
+#include "highscores.h"
 #include "init.h"
 #include "input.h"
 #include "main.h"
-#include "sound.h"
-#include "text.h"
-#include "stage.h"
 
 /* Externs. */
 App app;
+Highscores highscores;
 Stage stage;
 
 /* Functions. */
@@ -32,12 +31,10 @@ int main(int argc, char *argv[])
 	initSDL();
     // Cleaning up all functions.
 	atexit(cleanup);
-	// Intialising audio.
-	initSounds();
-	// Intialising Fonts.
-	initFonts();
+	// Intialising Game.
+	initGame();
 	// Intialising the scene.
-	initStage();
+	initHighscores();
 	// Frame rate.
 	then = SDL_GetTicks();
 	remainder = 0;

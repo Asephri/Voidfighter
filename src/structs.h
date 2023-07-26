@@ -10,22 +10,37 @@ typedef struct Explosion Explosion;
 typedef struct Debris Debris;
 typedef struct trail trail;
 typedef struct fire fire;
+typedef struct Texture Texture;
+
 /* ---------- */
 
 /* logic delegation structure. */
-typedef struct structs
+typedef struct
 {
 	void(*logic)(void);
 	void(*draw)(void);
 } Delegate; // handling game logic and drawing in main loop.
 /* ---------- */
 
+/* Texture Struct */
+
+struct Texture
+{
+	char name[MAX_NAME_LENGTH];
+	SDL_Texture *texture;
+	Texture *next;
+};
+
+/* ---------- */
+
+/* App struct */
 typedef struct
 {
 	SDL_Renderer *renderer;
 	SDL_Window   *window;
 	Delegate delegate;
 	int keyboard[MAX_KEYBOARD_KEYS]; //holds the state of all keys on the keyboard.
+	Texture textureHead, *textureTail;
 } App;
 /* ---------- */
 
@@ -121,4 +136,19 @@ typedef struct
 	int y;
 	int speed;
 } Star;
+/* ---------- */
+
+/* Highscore Structures */
+
+typedef struct
+{
+	int recent;
+	int score;
+} Highscore;
+
+typedef struct
+{
+	Highscore highscore[NUM_HIGHSCORES];
+} Highscores;
+
 /* ---------- */

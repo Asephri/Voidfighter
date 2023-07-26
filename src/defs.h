@@ -9,11 +9,19 @@ Copyright (C) 2023-2024 Asephri. All rights reserved.
 /* ----- Text Defines ----- */
 /* Application Name */
 #define PROJECT_NAME "Voidfighter"
-/* Max size for a character string. */
-#define MAX_LINE_LENGTH 1024
+
 // Text width and height.
 #define GLYPH_HEIGHT 28
 #define GLYPH_WIDTH  18
+
+/* Highscores */
+#define NUM_HIGHSCORES 5
+
+/* Text Array Limit.*/
+#define STRNCPY(dest, src, n) strncpy(dest, src, n); dest[n - 1] = '\0'
+#define MAX_NAME_LENGTH 32
+/* Max size for a character string. */
+#define MAX_LINE_LENGTH 1024
 
 /* Hud Resolution. */
 #define HUD_WIDTH 1024

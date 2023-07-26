@@ -4,7 +4,10 @@ Copyright (C) 2023-2024 Asephri. All rights reserved.
 
 /* Headers */
 #include "common.h"
+#include "background.h"
+#include "hud.h"
 #include "draw.h"
+#include "highscores.h"
 #include "sound.h"
 #include "stage.h"
 #include "text.h"
@@ -12,6 +15,7 @@ Copyright (C) 2023-2024 Asephri. All rights reserved.
 
 /* Externs. */
 extern App app;
+extern Highscores highscore;
 extern Stage stage;
 
 /* Functions. */
@@ -32,8 +36,6 @@ static void clipPlayer(void);
 static void clipEnemies(void);
 static void checkPlayerEnemyCollisions(void);
 static void resetStage(void);
-static void initStars(void);
-static void doStars(void);
 static void drawExplosions(void);
 static void doExplosions(void);
 static void addExplosions(int x, int y, int num);
@@ -46,7 +48,6 @@ static void addtrails(int x, int y, int num);
 static void drawfire(void);
 static void dofire(void);
 static void addfire(Entity *e);
-static void drawHud(void);
 static void doPointsSphere(void);
 static void addPointsSphere(int x, int y);
 static void drawPointsSphere(void);
@@ -61,20 +62,11 @@ static SDL_Texture *background;
 static SDL_Texture *explosionTexture;
 static SDL_Texture *trailTexture;
 static SDL_Texture *fireTexture;
-static SDL_Texture *hudTexture;
-static SDL_Texture *hudeffectsTexture;
-static SDL_Texture* hudscreenTexture;
 static SDL_Texture* pointsTexture;
 static int enemySpawnTimer;
 static int stageResetTimer;
-static int backgroundX;
-static int hudX;
-static int hudeffectsX;
-static int hudscreenX;
-static Star stars[MAX_STARS];
-static int highscore;
-static int HUD_HEALTH_BUFFER[3];
 static int POINT_RESULT_BUFFER;
+int HUD_HEALTH_BUFFER[3];
 
 /* ----- Stage Creation ----- */
 
@@ -103,16 +95,13 @@ void initStage(void)
     explosionTexture = loadTexture("gfx/explosion.png");
     trailTexture = loadTexture("gfx/trail.png");
     fireTexture = loadTexture("gfx/fire.png");
-    hudTexture = loadTexture("gfx/hud.png");
-    hudeffectsTexture = loadTexture("gfx/hudeffects.png");
-    hudscreenTexture = loadTexture("gfx/hudscreen.png");
     pointsTexture = loadTexture("gfx/points.png");
 
     // Load Music
-    loadMusic("music/voidfighter - Track 01 (deepspace-01).ogg");
+    //loadMusic("music/voidfighter - Track 01 (deepspace-01).ogg");
 
     // Play music
-    playMusic(1);
+    //playMusic(1);
 
     // Reset the stage
     resetStage();
@@ -212,60 +201,11 @@ static void initPlayer()
 }
 /* ---------- */
 
-/* ----- Creating a Starfield Effect ----- */
-
-/* Intialising Stars. */
-static void initStars(void)
-{
-    int i;
-    for (i = 0; i < MAX_STARS; i++)
-    {
-        stars[i].x = rand() % SCREEN_WIDTH;
-        stars[i].y = rand() % (SCREEN_HEIGHT - HUD_HEIGHT)  ;
-        stars[i].speed = 1 + rand() % 8;
-    }   
-}
-/* ---------- */
-
-/* ----- Creating The Background ----- */
-
-/* Background Behavour. */
-static void doBackground(void)
-{
-    if (--backgroundX < -SCREEN_WIDTH)
-    {
-        backgroundX = 0;
-    }
-}
-/* ---------- */
-
-static void doHud(void)
-{
-    if (--hudX < -SCREEN_WIDTH)
-    {
-        hudX = 0;
-    }
-}
-/* ---------- */
-
-static void doHudEffects(void)
-{
-    if (--hudeffectsX < -SCREEN_WIDTH)
-    {
-        hudeffectsX = 0;
-    }
-}
-/* ---------- */
-static void doHudscreen(void)
-{
-    hudscreenX = 0;
-}
-/* ---------- */
-
 /* Local file logic. */
 static void logic(void)
 {   
     doBackground();
+
 	doStars();
 	doPlayer();
 	doEnemies();
@@ -276,9 +216,6 @@ static void logic(void)
 	doDebris(); 
     dotrails();
     dofire();
-    doHud();
-    doHudEffects();
-    doHudscreen();
 	spawnEnemies();
 	clipPlayer();
     clipEnemies();
@@ -286,24 +223,9 @@ static void logic(void)
 
     if (player == NULL && --stageResetTimer <= 0)
     {
-        resetStage();
-    }
-}
-/* ---------- */
+        addHighscore(stage.score);
 
-/* The Stars behaviour. */
-static void doStars(void)
-{
-    int i;
-    
-    for (i = 0; i < MAX_STARS; i++)
-    {
-        stars[i].x -= stars[i].speed;
-
-        if (stars[i].x <0)
-        {
-            stars[i].x = SCREEN_WIDTH + stars[i].x;
-        }
+        initHighscores();
     }
 }
 /* ---------- */
@@ -699,10 +621,6 @@ static int bulletHitFighter(Entity *b)
              
                 addPointsSphere(e->x + e->w / 2, e->y + e->h / 2);
                 playSound(SND_ENEMY_DIE, CH_ANY);
-
-                //award points for score.
-                stage.score++;
-                highscore = MAX(stage.score, highscore);
             }
 
             int i;
@@ -770,8 +688,6 @@ for (e = stage.pointsHead.next; e != NULL; e = e->next)
 			e->health = 0;
 
 			stage.score += POINT_RESULT_BUFFER;
-
-			highscore = MAX(stage.score, highscore);
 
 			playSound(SND_POINTS, CH_POINTS);
 		}
@@ -1103,78 +1019,6 @@ static void drawBullets(void)
 }
 /* ---------- */
 
-/* Rendering the Stars. */
-static void drawStars(void)
-{
-	int i, c;
-
-	for (i = 0; i < MAX_STARS; i++)
-	{
-		c = 32 * stars[i].speed;
-
-		SDL_SetRenderDrawColor(app.renderer, c, c, c, 255);
-
-		SDL_RenderDrawLine(app.renderer, stars[i].x, stars[i].y, stars[i].x + 3, stars[i].y);
-	}
-}
-/* ---------- */
-
-static void drawBackground(void)
-{
-	SDL_Rect dest;
-	int      x;
-
-	for (x = backgroundX; x < SCREEN_WIDTH; x += SCREEN_WIDTH)
-	{
-		dest.x = x;
-		dest.y = 0;
-		dest.w = SCREEN_WIDTH;
-		dest.h = (SCREEN_HEIGHT - HUD_HEIGHT)  ;
-
-		SDL_RenderCopy(app.renderer, background, NULL, &dest);
-	}
-}
-/* ---------- */
-
-/* Rendering the Hud. */
-static void drawHudX(void)
-{
-	SDL_Rect dest;
-	dest.x = 0;
-	dest.y = SCREEN_HEIGHT-HUD_HEIGHT;
-    dest.w = HUD_WIDTH;
-	dest.h = HUD_HEIGHT;
-	SDL_RenderCopy(app.renderer, hudTexture, NULL, &dest);
-}
-/* ---------- */
-
-/* Rendering the Hud Screen. */
-static void drawHudscreen(void)
-{
-	SDL_Rect dest;
-	int      x;
-    x = hudscreenX;
-	dest.x = x;
-	dest.y = 0;
-	dest.w = SCREEN_WIDTH;
-	dest.h = SCREEN_HEIGHT-HUD_HEIGHT;
-
-	SDL_RenderCopy(app.renderer, hudscreenTexture, NULL, &dest);
-}
-/* ---------- */
-
-/* Rendering the Hud. */
-static void drawHudeffectX(void)
-{
-	SDL_Rect dest;
-	dest.x = 0;
-	dest.y = SCREEN_HEIGHT-HUD_HEIGHT;
-    dest.w = 320;
-	dest.h = 128;
-	SDL_RenderCopy(app.renderer, hudeffectsTexture, NULL, &dest);
-}
-/* ---------- */
-
 static void drawDebris(void)
 {
 	Debris *d;
@@ -1234,107 +1078,6 @@ static void drawfire(void)
 	{
 		blitRect(fireTexture, &f->rect, f->x, f->y);
 	}
-}
-/* ---------- */
-
-/* HUD Text rendering. */
-static void drawHud(void)
-{
-    drawText(HUD_SCORE_POS_WIDTH, HUD_SCORE_POS_HEIGHT, 255, 255, 255, "SCORE: %03d", stage.score);
-
-    // Hud health
-    int HUDHEALTH;
-    if (player == NULL)
-    {
-        HUDHEALTH = 0;
-    }
-    else
-    {
-        HUDHEALTH = player->health;
-    }
-
-    // Update the HUD_HEALTH_BUFFER based on the player's health.
-    switch (HUDHEALTH) 
-    {
-    case 25:
-        HUD_HEALTH_BUFFER[0] = 255;
-        HUD_HEALTH_BUFFER[1] = 255;
-        HUD_HEALTH_BUFFER[2] = 255;
-        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
-        break;
-    case 24:
-        HUD_HEALTH_BUFFER[0] = 255;
-        HUD_HEALTH_BUFFER[1] = 223;
-        HUD_HEALTH_BUFFER[2] = 225;
-        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
-        break;
-    case 20:
-        HUD_HEALTH_BUFFER[0] = 255;
-        HUD_HEALTH_BUFFER[1] = 170;
-        HUD_HEALTH_BUFFER[2] = 174;
-        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
-        break;
-    case 15:
-        HUD_HEALTH_BUFFER[0] = 255;
-        HUD_HEALTH_BUFFER[1] = 117;
-        HUD_HEALTH_BUFFER[2] = 124;
-        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
-        break;
-    case 10:
-        HUD_HEALTH_BUFFER[0] = 255;
-        HUD_HEALTH_BUFFER[1] = 64;
-        HUD_HEALTH_BUFFER[2] = 73;
-        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
-        break;
-    case 5:
-        HUD_HEALTH_BUFFER[0] = 237;
-        HUD_HEALTH_BUFFER[1] = 28;
-        HUD_HEALTH_BUFFER[2] = 36;
-        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
-        break;
-    case 4:
-        HUD_HEALTH_BUFFER[0] = 197;
-        HUD_HEALTH_BUFFER[1] = 16;
-        HUD_HEALTH_BUFFER[2] = 26;
-        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
-        break;
-    case 3:
-        HUD_HEALTH_BUFFER[0] = 148;
-        HUD_HEALTH_BUFFER[1] = 12;
-        HUD_HEALTH_BUFFER[2] = 18;
-        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
-        break;
-    case 2:
-        HUD_HEALTH_BUFFER[0] = 99;
-        HUD_HEALTH_BUFFER[1] = 7;
-        HUD_HEALTH_BUFFER[2] = 12;
-        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
-        break;
-    case 1:
-        HUD_HEALTH_BUFFER[0] = HUD_HEALTH_POS_HEIGHT;
-        HUD_HEALTH_BUFFER[1] = 3;
-        HUD_HEALTH_BUFFER[2] = 5;
-        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
-        break;
-    case 0:
-        HUD_HEALTH_BUFFER[0] = 0;
-        HUD_HEALTH_BUFFER[1] = 0;
-        HUD_HEALTH_BUFFER[2] = 0;
-        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
-        break;
-    default:
-        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
-        break;
-    }
-
-    if (stage.score > 0 && stage.score == highscore)
-    {
-        drawText(HUD_HIGHSCORE_POS_WIDTH, HUD_HIGHSCORE_POS_HEIGHT, 0, 255, 0, "HIGH SCORE: %03d", highscore);
-    }
-    else
-    {
-        drawText(HUD_HIGHSCORE_POS_WIDTH, HUD_HIGHSCORE_POS_HEIGHT, 255, 255, 255, "HIGH SCORE: %03d", highscore);
-    }
 }
 /* ---------- */
 
@@ -1423,6 +1166,106 @@ static void drawPointsSphere(void)
     }
 }
 
+/* HUD Text rendering. */
+void drawHudText(void)
+{
+    drawText(HUD_SCORE_POS_WIDTH, HUD_SCORE_POS_HEIGHT, 255, 255, 255, "SCORE: %03d", stage.score);
+
+    // Hud health
+    int HUDHEALTH;
+    if (player == NULL)
+    {
+        HUDHEALTH = 0;
+    }
+    else
+    {
+        HUDHEALTH = player->health;
+    }
+
+    // Update the HUD_HEALTH_BUFFER based on the player's health.
+    switch (HUDHEALTH) 
+    {
+    case 25:
+        HUD_HEALTH_BUFFER[0] = 255;
+        HUD_HEALTH_BUFFER[1] = 255;
+        HUD_HEALTH_BUFFER[2] = 255;
+        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
+        break;
+    case 24:
+        HUD_HEALTH_BUFFER[0] = 255;
+        HUD_HEALTH_BUFFER[1] = 223;
+        HUD_HEALTH_BUFFER[2] = 225;
+        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
+        break;
+    case 20:
+        HUD_HEALTH_BUFFER[0] = 255;
+        HUD_HEALTH_BUFFER[1] = 170;
+        HUD_HEALTH_BUFFER[2] = 174;
+        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
+        break;
+    case 15:
+        HUD_HEALTH_BUFFER[0] = 255;
+        HUD_HEALTH_BUFFER[1] = 117;
+        HUD_HEALTH_BUFFER[2] = 124;
+        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
+        break;
+    case 10:
+        HUD_HEALTH_BUFFER[0] = 255;
+        HUD_HEALTH_BUFFER[1] = 64;
+        HUD_HEALTH_BUFFER[2] = 73;
+        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
+        break;
+    case 5:
+        HUD_HEALTH_BUFFER[0] = 237;
+        HUD_HEALTH_BUFFER[1] = 28;
+        HUD_HEALTH_BUFFER[2] = 36;
+        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
+        break;
+    case 4:
+        HUD_HEALTH_BUFFER[0] = 197;
+        HUD_HEALTH_BUFFER[1] = 16;
+        HUD_HEALTH_BUFFER[2] = 26;
+        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
+        break;
+    case 3:
+        HUD_HEALTH_BUFFER[0] = 148;
+        HUD_HEALTH_BUFFER[1] = 12;
+        HUD_HEALTH_BUFFER[2] = 18;
+        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
+        break;
+    case 2:
+        HUD_HEALTH_BUFFER[0] = 99;
+        HUD_HEALTH_BUFFER[1] = 7;
+        HUD_HEALTH_BUFFER[2] = 12;
+        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
+        break;
+    case 1:
+        HUD_HEALTH_BUFFER[0] = HUD_HEALTH_POS_HEIGHT;
+        HUD_HEALTH_BUFFER[1] = 3;
+        HUD_HEALTH_BUFFER[2] = 5;
+        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
+        break;
+    case 0:
+        HUD_HEALTH_BUFFER[0] = 0;
+        HUD_HEALTH_BUFFER[1] = 0;
+        HUD_HEALTH_BUFFER[2] = 0;
+        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
+        break;
+    default:
+        drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
+        break;
+    }
+
+    if (stage.score > 0)
+    {
+        drawText(HUD_HIGHSCORE_POS_WIDTH, HUD_HIGHSCORE_POS_HEIGHT, 0, 255, 0, "HIGH SCORE: %03d", stage.score);
+    }
+    else
+    {
+        drawText(HUD_HIGHSCORE_POS_WIDTH, HUD_HIGHSCORE_POS_HEIGHT, 255, 255, 255, "HIGH SCORE: %03d", stage.score);
+    }
+}
+/* ---------- */
 
 /* ----- Rendering objects in order ----- */
 
@@ -1438,9 +1281,8 @@ static void draw(void)
     drawtrails();
     drawfire();
     drawBullets(); // Draw the bullets.
-    drawHudX();
     drawHud();
-    drawHudeffectX();
-    drawHudscreen();
+    drawHudText();
+    drawHudEffects();
 }
 /* ---------- */
