@@ -2,8 +2,6 @@
 Copyright (C) 2023-2024 Asephri. All rights reserved.
 */
 
-#include "defs.h"
-
 /* Typedefines. */
 typedef struct Entity Entity;	// inheritance
 typedef struct Explosion Explosion;
@@ -37,15 +35,17 @@ struct Texture
 typedef struct
 {
 	SDL_Renderer *renderer;
-	SDL_Window   *window;
+	SDL_Window *window;
 	Delegate delegate;
 	int keyboard[MAX_KEYBOARD_KEYS]; //holds the state of all keys on the keyboard.
 	Texture textureHead, *textureTail;
+	char inputText[MAX_LINE_LENGTH]; // Buffer for player input capturing.
 } App;
 /* ---------- */
 
 /* Generic Entity */
-struct Entity {
+struct Entity 
+{
 	float x; //float holds real numbers as variables.
 	float y;
 	int w;
@@ -64,11 +64,11 @@ struct Entity {
 /* Explosion Effect */
 struct Explosion
 {
-	float      x;
-	float      y;
-	float      dx;
-	float      dy;
-	int        r, g, b, a;
+	float x;
+	float y;
+	float dx;
+	float dy;
+	int r, g, b, a;
 	Explosion *next;
 };
 /* ---------- */
@@ -76,25 +76,25 @@ struct Explosion
 /* Debris Effect. */
 struct Debris
 {
-	float        x;
-	float        y;
-	float        dx;
-	float        dy;
-	SDL_Rect     rect;
+	float x;
+	float y;
+	float dx;
+	float dy;
+	SDL_Rect rect;
 	SDL_Texture *texture;
-	int          life;
-	Debris      *next;
+	int life;
+	Debris *next;
 };
 /* ---------- */
 
 /* Trail Effect. */
 struct trail
 {
-	float      x;
-	float      y;
-	float      dx;
-	float      dy;
-	int        r, g, b, a;
+	float x;
+	float y;
+	float dx;
+	float dy;
+	int r, g, b, a;
 	trail *next;
 };
 /* ---------- */
@@ -117,10 +117,10 @@ struct fire
 
 typedef struct
 {
-	Entity    fighterHead, *fighterTail;
-	Entity    bulletHead, *bulletTail;
+	Entity fighterHead, *fighterTail;
+	Entity bulletHead, *bulletTail;
 	Explosion explosionHead, *explosionTail;
-	Debris    debrisHead, *debrisTail;
+	Debris debrisHead, *debrisTail;
 	trail trailHead, *trailTail;
 	fire fireHead, *fireTail;
 	Entity pointsHead, *pointsTail;
@@ -142,13 +142,14 @@ typedef struct
 
 typedef struct
 {
+	char name[MAX_SCORE_NAME_LENGTH];
 	int recent;
 	int score;
 } Highscore;
 
 typedef struct
 {
-	Highscore highscore[NUM_HIGHSCORES];
+	Highscore highscore[NUM_HIGHSCORES]; // Hold players name.
 } Highscores;
 
 /* ---------- */

@@ -11,50 +11,62 @@ extern App app;
 
 /* ----- User Input ------ */
 
-/* Arrow Key up input */
+// Handle Arrow Key up input.
 static void doKeyUp(SDL_KeyboardEvent *event)
 {
-	if (event->repeat == 0 && event->keysym.scancode < MAX_KEYBOARD_KEYS) //if its not a repeat.
-	{
-		app.keyboard[event->keysym.scancode] = 0;
-	}
+    if (event->repeat == 0 && event->keysym.scancode < MAX_KEYBOARD_KEYS) // Check if it's not a repeat.
+    {
+        app.keyboard[event->keysym.scancode] = 0; // Set the key state to released (0).
+        printf("// Console message. Key released: %d\n", event->keysym.scancode);
+    }
 }
-/* ---------- */
 
-/* Arrow Key Down input. */
+// Handle Arrow Key Down input.
 static void doKeyDown(SDL_KeyboardEvent *event)
 {
-	if (event->repeat == 0 && event->keysym.scancode < MAX_KEYBOARD_KEYS) //if repeat is true!
-	{
-		app.keyboard[event->keysym.scancode] = 1;
-	}
+    if (event->repeat == 0 && event->keysym.scancode < MAX_KEYBOARD_KEYS) // Check if it's not a repeat.
+    {
+        app.keyboard[event->keysym.scancode] = 1; // Set the key state to pressed (1).
+        printf("// Console message. Key pressed: %d\n", event->keysym.scancode);
+    }
 }
-/* ---------- */
 
-/* User Movement and Controls Input. */
+// User Movement and Controls Input.
 void doInput(void)
 {
-	SDL_Event event;
+    SDL_Event event;
 
-	while (SDL_PollEvent(&event))
-	{
-		switch (event.type)
-		{
-			case SDL_QUIT:
-				exit(0);
-				break;
+    memset(app.inputText, '\0', MAX_LINE_LENGTH); // Clearing memory for input Text.
 
-			case SDL_KEYDOWN:
-				doKeyDown(&event.key);
-				break;
+    while (SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+            case SDL_QUIT:
+                exit(0); // Quit the application when the user clicks the close button.
+                break;
 
-			case SDL_KEYUP:
-				doKeyUp(&event.key);
-				break;
+            case SDL_KEYDOWN:
+                doKeyDown(&event.key); // Handle the key press event.
+                break;
 
-			default:
-				break;
-		}
-	}
+            case SDL_KEYUP:
+                doKeyUp(&event.key); // Handle the key release event.
+                break;
+
+            case SDL_TEXTINPUT:
+                STRNCPY(app.inputText, event.text.text, MAX_LINE_LENGTH); // Copy the text input into the app's inputText variable.
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    // Check for SDL errors.
+    const char* error = SDL_GetError();
+    if (*error != '\0') {
+        fprintf(stderr, "// SDL Error: %s\n", error);
+        SDL_ClearError();
+    }
 }
-/* ---------- */
