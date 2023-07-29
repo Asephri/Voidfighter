@@ -51,7 +51,7 @@ target_link_libraries(
     m
 )
 
-# Set WIN32_EXECUTABLE property to hide the console on Windows
+#Set WIN32_EXECUTABLE property to hide the console on Windows
 if (WIN32)
     set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
@@ -62,13 +62,13 @@ if (UNIX AND NOT APPLE)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/icon.ico ${CMAKE_CURRENT_BINARY_DIR}/icon.ico COPYONLY)
 
     # Add the generated resources.cpp to sources
-    set(RESOURCES_CPP ${CMAKE_CURRENT_BINARY_DIR}/resources.cpp)
-    add_custom_command(
-        OUTPUT ${RESOURCES_CPP}
-        COMMAND rcc -binary ${CMAKE_CURRENT_BINARY_DIR}/icon.ico -o ${RESOURCES_CPP}
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/icon.ico
-        COMMENT "Generating resources.cpp"
-    )
+    #set(RESOURCES_CPP ${CMAKE_CURRENT_BINARY_DIR}/resources.cpp)
+    #add_custom_command(
+    #    OUTPUT ${RESOURCES_CPP}
+    #    COMMAND rcc -binary ${CMAKE_CURRENT_BINARY_DIR}/icon.ico -o ${RESOURCES_CPP}
+    #    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/icon.ico
+    #    COMMENT "Generating resources.cpp"
+    #)
     
     add_custom_target(${CMAKE_PROJECT_NAME}_resources DEPENDS ${RESOURCES_CPP})
     list(APPEND SOURCES ${RESOURCES_CPP})

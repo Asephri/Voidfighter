@@ -6,14 +6,13 @@ Copyright (C) 2023-2024 Asephri. All rights reserved.
 #include "common.h"
 #include "draw.h"
 #include "init.h"
+#include "title.h"
 #include "input.h"
 #include "main.h"
-#include "sound.h"
-#include "text.h"
-#include "stage.h"
 
 /* Externs. */
 App app;
+Highscores highscores;
 Stage stage;
 
 /* Functions. */
@@ -21,70 +20,98 @@ static void capFrameRate(long *then, float *remainder);
 
 /* ----- Main Program ----- */
 
-/* Main intialiser. */
+/* Main initializer. */
 int main(int argc, char *argv[])
 {
-	long then; // Store integer with larger range then int
-	float remainder; // Accounts for any fractional time
-	// Creating memory block for the application
-	memset(&app, 0, sizeof(App));
-    // intialising SDL.
-	initSDL();
-    // Cleaning up all functions.
-	atexit(cleanup);
-	// Intialising audio.
-	initSounds();
-	// Intialising Fonts.
-	initFonts();
-	// Intialising the scene.
-	initStage();
-	// Frame rate.
-	then = SDL_GetTicks();
-	remainder = 0;
+    long then; // Store integer with a larger range than int
+    float remainder; // Accounts for any fractional time
 
-    /* while loop */
-	while (1)
-	{   
-        // Calling the prepare scene function.
-		prepareScene();
-        // Calling the do input function.
-		doInput();
-		// Calling logic.
-		app.delegate.logic();
-		// Calling drawing.
-		app.delegate.draw();
-		// Calling the present scene function.
-		presentScene();
-        // fFrame rate cap function.
-		capFrameRate(&then, &remainder);
-	}
+    // Redirect console messages to "consolelog.txt"
+    freopen("consolelog.txt", "w", stdout);
 
-	return 0;
+	printf("----------------------------------------------------------------------------------------------------\n");
+
+	printf("voidFighter - New Session\n");
+	
+	printf("Copyright (C) 2023-2024 Asephri. All rights reserved.\n");
+
+	printf("consolelog.txt\n");
+	
+	printf("----------------------------------------------------------------------------------------------------\n");
+
+    // Creating a memory block for the application
+    memset(&app, 0, sizeof(App));
+
+    // Initializing SDL.
+    initSDL();
+
+    // Register cleanup function to be called at exit
+    atexit(cleanup);
+
+    // Initializing the Game.
+    initGame();
+
+    // Initializing the scene.
+    initTitle();
+
+    // Frame rate control variables.
+    then = SDL_GetTicks();
+    remainder = 0;
+
+    /* Main game loop */
+    while (1)
+    {
+        // Prepare the scene for rendering.
+        prepareScene();
+
+        // Process user input.
+        doInput();
+
+        // Update game logic.
+        app.delegate.logic();
+
+        // Draw the game.
+        app.delegate.draw();
+
+        // Present the scene for display.
+        presentScene();
+
+        // Cap the frame rate to achieve a stable frame rate.
+        capFrameRate(&then, &remainder);
+    }
+
+    return 0;
 }
-/* ---------- */
 
 /* Frame Rate Cap. */
 static void capFrameRate(long *then, float *remainder)
 {
     long wait, frameTime;
 
-    wait = 16 + *remainder;  // Set the initial wait time between frames (60 FPS is approximately 0.0167 seconds per frame (1 second divided by 60), which is approximately 16 milliseconds per frame.)
+    // Set the desired time interval between frames (60 FPS is approximately 16 milliseconds per frame).
+    wait = 16 + *remainder;
 
-    *remainder -= (int)*remainder;  // Remove the fractional part of remainder
+    // Remove the fractional part of the remainder to ensure accurate time measurement.
+    *remainder -= (int)*remainder;
 
-    frameTime = SDL_GetTicks() - *then;  // Calculate the time elapsed since the last frame
+    // Calculate the time elapsed since the last frame.
+    frameTime = SDL_GetTicks() - *then;
 
-    wait -= frameTime;  // Calculate the remaining time to wait before the next frame
+    // Calculate the remaining time to wait before the next frame.
+    wait -= frameTime;
 
+    // Ensure there's a minimum wait time of 1 millisecond to avoid busy-waiting.
     if (wait < 1)
     {
-        wait = 1;  // Set a minimum wait time of 1 millisecond
+        wait = 1;
     }
 
-    SDL_Delay(wait);  // Delay execution for the calculated wait time
+    // Delay execution for the calculated wait time.
+    SDL_Delay(wait);
 
-    *remainder += 0.667;  // Increment remainder to account for fractional time
+    // Increment the remainder to account for fractional time for the next frame.
+    *remainder += 0.667;
 
-    *then = SDL_GetTicks();  // Update the reference time for the next frame
+    // Update the reference time for the next frame.
+    *then = SDL_GetTicks();
 }
-/* ---------- */
