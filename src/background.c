@@ -96,7 +96,7 @@ void drawStars(void)
         SDL_RenderDrawLine(app.renderer, stars[i].x, stars[i].y, stars[i].x + 3, stars[i].y);
     }
     // Console message.
-    printf("Stars rendered.\n");
+    //printf("Stars rendered.\n");
 }
 
 /* Render the background on the screen. */
@@ -116,5 +116,5 @@ void drawBackground(void)
     }
 
     // Console message.
-    printf("Background rendered.\n");
+    //printf("Background rendered.\n");
 }
