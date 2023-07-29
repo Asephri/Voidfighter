@@ -47,7 +47,7 @@ void initTitle(void)
 /* Local file logic. */
 static void logic(void)
 {
-    printf("Local logic loaded.\n");
+    //printf("Local logic loaded.\n");
     doBackground();
 
     doStars();
@@ -73,7 +73,7 @@ static void logic(void)
 /* Local draw logic. */
 static void draw(void)
 {
-    printf("draw logic for title.");
+    //printf("draw logic for title.");
     drawBackground();
 
     drawStars();
@@ -92,7 +92,7 @@ static void draw(void)
 /* Title rendering. */
 static void drawTitle(void)
 {
-    printf("Creating title.");
+    //printf("Creating title.");
     SDL_Rect r;
 
     r.x = 0;
