@@ -251,7 +251,7 @@ static void drawHighscores(void)
         y += 40;
 
     }
-
+    // Command to shoot to start game. This is a fixed issue. pelease remember to update this if it changes.
     drawText(315, 600, 255, 255, 255, "PRESS RIGHT CTRL TO PLAY!");
 }
 
