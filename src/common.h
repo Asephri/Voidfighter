@@ -2,7 +2,6 @@
 Copyright (C) 2023-2024 Asephri. All rights reserved.
 */
 
-/* Libraries. */
 #include "ctype.h"
 #include "defs.h"
 #include "math.h"
@@ -12,4 +11,3 @@ Copyright (C) 2023-2024 Asephri. All rights reserved.
 #include "string.h"
 #include "structs.h"
 #include <stdbool.h>
-/* ---------- */
