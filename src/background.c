@@ -2,22 +2,16 @@
 Copyright (C) 2023-2024 Asephri. All rights reserved.
 */
 
-/* Headers. */
 #include "common.h"
 #include "background.h"
 #include "draw.h"
 
-/* Externs. */
 extern App app;
 
-/* Global Variables. */
 static int backgroundX;
 static Star stars[MAX_STARS];
 static SDL_Texture *background;
 
-/* ----- Creating a Starfield Effect ----- */
-
-/* Initialize the stars with random positions and speeds. */
 void initStars(void)
 {
     int i;
@@ -27,14 +21,9 @@ void initStars(void)
         stars[i].y = rand() % (SCREEN_HEIGHT - HUD_HEIGHT);
         stars[i].speed = 1 + rand() % 8;
     }
-    
-    // Console message.
     //printf("Stars initialized.\n");
 }
 
-/* ----- Creating The Background ----- */
-
-/* Initialize the background texture. */
 void initBackground(void)
 {
     background = loadTexture("gfx/background.png");
@@ -51,19 +40,15 @@ void initBackground(void)
     }*/
 }
 
-/* Update the background's horizontal position. */
 void doBackground(void)
 {
     if (--backgroundX < -SCREEN_WIDTH)
     {
         backgroundX = 0;
     }
-    
-    // Console message.
     //printf("Background position updated: backgroundX = %d\n", backgroundX);
 }
 
-/* Update the stars' horizontal positions. */
 void doStars(void)
 {
     int i;
@@ -77,12 +62,9 @@ void doStars(void)
             stars[i].x = SCREEN_WIDTH + stars[i].x;
         }
     }
-    
-    // Console message.
     //printf("Stars position updated.\n");
 }
 
-/* Render the stars on the screen. */
 void drawStars(void)
 {
     int i, c;
@@ -95,11 +77,9 @@ void drawStars(void)
 
         SDL_RenderDrawLine(app.renderer, stars[i].x, stars[i].y, stars[i].x + 3, stars[i].y);
     }
-    // Console message.
     //printf("Stars rendered.\n");
 }
 
-/* Render the background on the screen. */
 void drawBackground(void)
 {
     SDL_Rect dest;
