@@ -1,12 +1,9 @@
 /*
-Copyright (C) 2023-2024 Asephri. All rights reserved.
+Copyright (C) 2023-2024 Asephri.net. All rights reserved.
 */
 
-/* ----- Text Defines ----- */
-/* Application Name */
 #define PROJECT_NAME "Voidfighter"
 
-/* Collision Detection. */
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 

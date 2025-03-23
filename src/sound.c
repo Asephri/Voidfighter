@@ -1,24 +1,17 @@
 /*
-Copyright (C) 2023-2024 Asephri. All rights reserved.
- */
+Copyright (C) 2023-2025 Asephri.net. All rights reserved.
+*/
 
-/* Libraries. */
 #include <SDL2/SDL_mixer.h>
 
-/* Headers. */
 #include "common.h"
 #include "sound.h"
 
-/* Functions. */
 static void loadSounds(void);
 
-/* Variables */
 static Mix_Chunk *sounds[SND_MAX];
 static Mix_Music *music;
 
-/* ----- Creating the Audio System ----- */
-
-// Initialize sound effects.
 void initSounds(void)
 {
     memset(sounds, 0, sizeof(Mix_Chunk*) * SND_MAX);
@@ -30,9 +23,6 @@ void initSounds(void)
     printf("// Audio system initialized.\n");
 }
 
-/* ----- Loading Music ----- */
-
-// Load music from file.
 void loadMusic(char *filename)
 {
     if (music != NULL)
@@ -52,9 +42,6 @@ void loadMusic(char *filename)
     printf("// Music loaded: %s\n", filename);
 }
 
-/* ----- Playing Music ----- */
-
-// Play music with the specified loop count.
 void playMusic(int loop)
 {
     Mix_PlayMusic(music, (loop) ? -1 : 0);
@@ -67,9 +54,6 @@ void playMusic(int loop)
     printf("// Music playing.\n");
 }
 
-/* ----- Playing Sound Effects ----- */
-
-// Play a sound effect on the specified channel.
 void playSound(int id, int channel)
 {
     Mix_PlayChannel(channel, sounds[id], 0);
@@ -82,9 +66,6 @@ void playSound(int id, int channel)
     printf("// Sound effect %d playing on channel %d.\n", id, channel);
 }
 
-/* ----- Loading Sound Channels ----- */
-
-// Load sound channels from file.
 static void loadSounds(void)
 {
     sounds[SND_PLAYER_FIRE] = Mix_LoadWAV("sound/voidfighter - Track 02 (PlayerFire).ogg");

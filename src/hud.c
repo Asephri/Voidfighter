@@ -1,17 +1,14 @@
 /*
-Copyright (C) 2023-2024 Asephri. All rights reserved.
+Copyright (C) 2023-2025 Asephri.net. All rights reserved.
 */
 
-/* Headers. */
 #include "common.h"
 #include "hud.h"
 #include "draw.h"
 
-/* Externs. */
 extern App app;
 extern Stage stage;
 
-/* Global Variables. */
 static int hudX;
 static int hudeffectsX;
 static SDL_Texture *hud;
@@ -20,9 +17,6 @@ bool isLoaded = false;
 bool isLoaded2 = false;
 bool isLoaded3 = false;
 
-/* ----- Creating The Background ----- */
-
-/* Initialize the HUD textures and set initial positions. */
 void initHud(void)
 {
     hudX = 0;
@@ -33,13 +27,9 @@ void initHud(void)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load HUD effects texture: %s\n", SDL_GetError());
         return;
     }
-    // Console message.
     printf("HUD initialized.\n");
 }
 
-/* ---------- */
-
-/* Load the main HUD texture. */
 void doHud(void)
 {
     if (!isLoaded)
@@ -53,12 +43,11 @@ void doHud(void)
         isLoaded = true;
         isLoaded2 = false;
         isLoaded3 = false;
-        // Console message.
+
         printf("Main HUD loaded.\n");
     }
 }
 
-/* Load the high score screen texture. */
 void doHudscore(void)
 {
     if (!isLoaded2)
@@ -72,12 +61,11 @@ void doHudscore(void)
         isLoaded2 = true;
         isLoaded3 = false;
         isLoaded = false;
-        // Console message.
+
         printf("High score screen loaded.\n");
     }
 }
 
-/* Load the new high score screen texture. */
 void doHudInputscore(void)
 {
     if (!isLoaded3)
@@ -91,12 +79,10 @@ void doHudInputscore(void)
         isLoaded3 = true;
         isLoaded2 = false;
         isLoaded = false;
-        // Console message.
         printf("New high score screen loaded.\n");
     }
 }
 
-/* Rendering the HUD. */
 void drawHud(void)
 {
     SDL_Rect dest;
@@ -108,9 +94,6 @@ void drawHud(void)
     SDL_RenderCopy(app.renderer, hud, NULL, &dest);
 }
 
-/* ---------- */
-
-/* Rendering the HUD effects. */
 void drawHudEffects(void)
 {
     SDL_Rect dest;

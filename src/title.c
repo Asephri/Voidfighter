@@ -1,8 +1,7 @@
-/* 
-Copyright (C) 2023-2024 Asephri. All rights reserved.
+/*
+Copyright (C) 2023-2025 Asephri.net. All rights reserved.
 */
 
-/* Headers. */
 #include "common.h"
 #include "background.h"
 #include "draw.h"
@@ -12,54 +11,44 @@ Copyright (C) 2023-2024 Asephri. All rights reserved.
 #include "text.h"
 #include "title.h"
 
-/* Externs. */
 extern App app;
 
-/* Functions. */
 static void logic(void);
 static void draw(void);
 static void drawTitle(void);
 
-/* Variables. */
 static SDL_Texture *voidfighter_titleTexture;
 static int reveal = 0;
 static int timeout;
 
-/* Intialising the titlescreen. */
 void initTitle(void)
 {
-    // Console message.
     printf("Initialising title.\n");
-    // assiging delegate functions locally.
+
     app.delegate.logic = logic;
     app.delegate.draw = draw;
 
-    // Allocating memory blocks.
-    memset(app.keyboard, 0, sizeof(int) * MAX_KEYBOARD_KEYS); // clearing keyboard input.
+    memset(app.keyboard, 0, sizeof(int) * MAX_KEYBOARD_KEYS);
 
     voidfighter_titleTexture = loadTexture("gfx/voidfighter_title.png");
 
-    // Title screentime out.
-
-    timeout = FPS * 5; // Five seconds.
+    timeout = FPS * 5;
 }
 
-/* Local file logic. */
 static void logic(void)
 {
-    //printf("Local logic loaded.\n");
     doBackground();
 
     doStars();
 
     doHud();
 
-    if (reveal < SCREEN_HEIGHT) // Prevent overflow wraparound.
+    if (reveal < SCREEN_HEIGHT)
     {
-        reveal++; // Incrementing reveal for title.
+        reveal++;
     }
 
-    if (--timeout <= -80) // decrementing timeout.
+    if (--timeout <= -80)
     {
         initHighscores(); 
     }
@@ -70,10 +59,8 @@ static void logic(void)
     }
 }
 
-/* Local draw logic. */
 static void draw(void)
 {
-    //printf("draw logic for title.");
     drawBackground();
 
     drawStars();
@@ -83,13 +70,12 @@ static void draw(void)
 
     drawTitle();
 
-    if (timeout % 40 < 20) // Calculating modulus to the degree of 40. if less than 20 ect.
+    if (timeout % 40 < 20)
     {
         drawTextPOSITION(SCREEN_WIDTH / 2, 600, 255,255,255, TEXT_CENTER, "PRESS RCTRL TO PLAY!");
     }
 }
 
-/* Title rendering. */
 static void drawTitle(void)
 {
     //printf("Creating title.");
@@ -100,7 +86,7 @@ static void drawTitle(void)
 
     SDL_QueryTexture(voidfighter_titleTexture, NULL, NULL, &r.w, &r.h);
 
-    r.h = MIN(reveal, r.h); // According to the value of reveal.
+    r.h = MIN(reveal, r.h);
 
     blitRect(voidfighter_titleTexture, &r, (SCREEN_WIDTH / 2) - (r.w / 2), 100);
 }

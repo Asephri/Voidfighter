@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2023-2024 Asephri. All rights reserved.
+Copyright (C) 2023-2025 Asephri.net. All rights reserved.
 */
 
 #include "common.h"
@@ -94,7 +94,5 @@ void drawBackground(void)
 
         SDL_RenderCopy(app.renderer, background, NULL, &dest);
     }
-
-    // Console message.
     //printf("Background rendered.\n");
 }

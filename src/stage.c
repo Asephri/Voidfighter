@@ -1,8 +1,7 @@
 /*
-Copyright (C) 2023-2024 Asephri. All rights reserved.
+Copyright (C) 2023-2025 Asephri.net. All rights reserved.
 */
 
-/* Headers */
 #include "common.h"
 #include "background.h"
 #include "draw.h"
@@ -13,12 +12,10 @@ Copyright (C) 2023-2024 Asephri. All rights reserved.
 #include "util.h"
 #include "hud.h"
 
-/* Externs. */
 extern App app;
 extern Highscores highscore;
 extern Stage stage;
 
-/* Functions. */
 static void logic(void);
 static void draw(void);
 static void initPlayer(void);
@@ -53,7 +50,6 @@ static void addPointsSphere(int x, int y);
 static void drawPointsSphere(void);
 static void drawHudText(void);
 
-/* Variables */
 static Entity *player;
 static SDL_Texture *bulletTexture;
 static SDL_Texture *enemyTexture;
@@ -69,9 +65,6 @@ static int stageResetTimer;
 static int POINT_RESULT_BUFFER;
 int HUD_HEALTH_BUFFER[3];
 
-/* ----- Stage Creation ----- */
-
-/* Intialising the Stage. */
 void initStage(void)
 {
     app.delegate.logic = logic;
@@ -79,7 +72,6 @@ void initStage(void)
 
     printf("Initializing the stage...\n");
 
-    // Initialize the stage structure
     memset(&stage, 0, sizeof(Stage));
     stage.fighterTail = &stage.fighterHead;
     stage.bulletTail = &stage.bulletHead;
@@ -89,7 +81,6 @@ void initStage(void)
     stage.fireTail = &stage.fireHead;
     stage.pointsTail = &stage.pointsHead;
 
-    // Load textures
     printf("Loading textures...\n");
     bulletTexture = loadTexture("gfx/playerBullet.png");
     enemyTexture = loadTexture("gfx/enemy.png");
@@ -101,15 +92,12 @@ void initStage(void)
     fireTexture = loadTexture("gfx/fire.png");
     pointsTexture = loadTexture("gfx/points.png");
 
-    // Load Music
     //loadMusic("music/voidfighter - Track 01 (deepspace-01).ogg");
 
-    // Play music
     //playMusic(1);
 
     printf("Stage initialization completed!\n");
 
-    // Reset the stage
     resetStage();
 	stage.score = 0;
 
@@ -120,7 +108,6 @@ void initStage(void)
 	stageResetTimer = FPS * 3;
 }
 
-/* Resetting the Stage. */
 static void resetStage(void)
 {
     Entity *e;
@@ -131,7 +118,6 @@ static void resetStage(void)
 
     printf("Resetting the stage...\n");
 
-    // Clear existing entities
     while (stage.fighterHead.next)
     {
         e = stage.fighterHead.next;
@@ -180,20 +166,15 @@ static void resetStage(void)
     printf("Stage reset completed!\n");
 }
 
-/* ----- Creating The Player ----- */
-
-/* Intialising the Player. */
 static void initPlayer()
 {
     printf("Initializing the player...\n");
 
-    // Allocate memory for the player entity.
     player = malloc(sizeof(Entity));
     memset(player, 0, sizeof(Entity));
     stage.fighterTail->next = player;
     stage.fighterTail = player;
 
-    // Set player properties.
     player->health = 25;
     player->x = 100;
     player->y = (SCREEN_HEIGHT - HUD_HEIGHT)  /2;
@@ -236,18 +217,16 @@ static void logic(void)
 
     printf("Logic completed.\n");
 }
-/* User Play Controls. */
+
 static void doPlayer(void)
 {
     printf("Handling player actions...\n");
 
-    // Handle player actions.
     if (player != NULL)
     {
         player->dx = player->dy = 0;
         player->x = player->x - PLAYER_PUSHBACK;
 
-        // Cooldown ticking
         if (player->reload > 0)
         {
             player->reload--;
@@ -284,7 +263,6 @@ static void doPlayer(void)
             fireBullet();
             printf("Player fired a bullet.\n");
 
-            // Set the cooldown to the specified value (100)
             player->reload = PLAYER_FIRE_COOLDOWN;
         }
     }
@@ -292,12 +270,10 @@ static void doPlayer(void)
     printf("Player actions handled.\n");
 }
 
-/* Player Bullet Entity. */
 static void fireBullet(void)
 {
     printf("Firing player bullet...\n");
 
-    // Create a bullet entity and fire it.
     Entity *bullet = malloc(sizeof(Entity));
     memset(bullet, 0, sizeof(Entity));
     stage.bulletTail->next = bullet;
@@ -317,7 +293,6 @@ static void fireBullet(void)
     printf("Player bullet fired.\n");
 }
 
-/* Setting Enemy Firing Behaviour. */
 static void doEnemies(void)
 {
     printf("Handling enemy actions...\n");
@@ -337,7 +312,6 @@ static void doEnemies(void)
     printf("Enemy actions handled.\n");
 }
 
-/* Firing enemy bullets. */
 static void fireEnemyBullet(Entity *e)
 {
 	Entity *bullet;
@@ -368,12 +342,9 @@ static void fireEnemyBullet(Entity *e)
     printf("Enemy bullet fired.\n");
 }
 
-/* Fighter Behaviour. */
 static void doFighters(void)
 {
     printf("Updating fighter entities...\n");
-
-    // Update fighter entities.
 
     Entity *e, *prev;
 
@@ -406,7 +377,6 @@ static void doFighters(void)
             e = prev;
         }
 
-        // Move enemies side by side on the y-axis.
         if (e != player)
         {
             e->dy = sin(SDL_GetTicks() / FPS / 2) * ENEMY_SPEED;
@@ -417,14 +387,9 @@ static void doFighters(void)
     printf("Fighter entities updated.\n");
 }
 
-/* ----- Bullet Creation ----- */
-
-/* Bullet Behaviour. */
 static void doBullets(void)
 {
     printf("Updating bullet entities...\n");
-
-    // Update bullet entities.
 
     Entity *b, *prev;
 
@@ -454,7 +419,6 @@ static void doBullets(void)
     printf("Bullet entities updated.\n");
 }
 
-/* Adding Explosions. */
 static void addExplosions(int x, int y, int num)
 {
     printf("Adding explosions...\n");
@@ -506,7 +470,6 @@ static void addExplosions(int x, int y, int num)
     printf("Explosions added.\n");
 }
 
-/* Bullet Collision Behaviour. */
 static void addDebris(Entity *e)
 {
     printf("Adding debris from bullet collision...\n");
@@ -542,7 +505,6 @@ static void addDebris(Entity *e)
     printf("Debris added.\n");
 }
 
-/* Adding Trails. */
 static void addtrails(int x, int y, int num)
 {
     printf("Adding trails...\n");
@@ -553,7 +515,7 @@ static void addtrails(int x, int y, int num)
     for (i = 0; i < num; i++)
     {
         if (i >= 1)
-            break; // Maximum of 1 trail reached, exit the loop.
+            break;
 
         e = malloc(sizeof(trail));
         memset(e, 0, sizeof(trail));
@@ -589,13 +551,12 @@ static void addtrails(int x, int y, int num)
                 break;
         }
 
-        e->a = rand() % FPS * 1.85; // Increase the multiplier for faster fade out.
+        e->a = rand() % FPS * 1.85;
     }
 
     printf("Trails added.\n");
 }
 
-/* Adding Fire. */
 static void addfire(Entity *e)
 {
     printf("Adding fire...\n");
@@ -630,12 +591,9 @@ static void addfire(Entity *e)
     printf("Fire added.\n");
 }
 
-/* Bullet Collision Behaviour. */
 static int bulletHitFighter(Entity *b)
 {
     printf("Checking if a bullet hits a fighter...\n");
-
-    // Check if a bullet hits a fighter.
 
     Entity *e;
 
@@ -684,7 +642,6 @@ static int bulletHitFighter(Entity *b)
     return 0;
 }
 
-/* Point Sphere Behaviour. */
 static void doPointsSphere(void)
 {
     printf("Updating point spheres...\n");
@@ -752,7 +709,6 @@ static void doPointsSphere(void)
     printf("Point spheres updated.\n");
 }
 
-/* Adding the Points Spheres. */
 static void addPointsSphere(int x, int y)
 {
     printf("Adding a point sphere...\n");
@@ -780,7 +736,6 @@ static void addPointsSphere(int x, int y)
     printf("Point sphere added.\n");
 }
 
-/* Setting Enemy Spawning Behaviour. */
 static void spawnEnemies(void)
 {
     printf("Spawning enemy entities...\n");
@@ -814,7 +769,6 @@ static void spawnEnemies(void)
     }
 }
 
-/* Creating Player Scene Bounds. */
 static void clipPlayer(void)
 {
     printf("Clipping the player's position within the screen...\n");
@@ -849,7 +803,6 @@ static void clipPlayer(void)
     printf("Player position clipped.\n");
 }
 
-/* Clipping Enemy Positions Within the Screen. */
 static void clipEnemies(void)
 {
     printf("Clipping enemy positions within the screen...\n");
@@ -858,32 +811,27 @@ static void clipEnemies(void)
 
     for (e = stage.fighterHead.next; e != NULL; e = e->next)
     {
-        // Skip clipping for the player entity.
         if (e != player)
         {
-            // Clip the enemy's x-coordinate to HUDSCREEN_X if it goes off the left side.
             if (e->x < HUDSCREEN_X)
             {
-                e->health = 0; // Set enemy health to 0 to remove it from the game.
-                // Alternatively, you can use "free(e);" to free the memory of the enemy entity.
+                e->health = 0;
+
                 printf("Enemy removed from the game: out of left bounds.\n");
             }
 
-            // Clip the enemy's y-coordinate to HUDSCREEN_Y if it goes above the top.
             if (e->y < HUDSCREEN_Y)
             {
                 e->y = HUDSCREEN_Y;
                 printf("Enemy clipped to HUDSCREEN_Y: out of top bounds.\n");
             }
 
-            // Clip the enemy's x-coordinate to HUDSCREEN_WIDTH if it goes off the right side.
             if (e->x > HUDSCREEN_WIDTH)
             {
                 e->x = HUDSCREEN_WIDTH;
                 printf("Enemy clipped to HUDSCREEN_WIDTH: out of right bounds.\n");
             }
 
-            // Clip the enemy's y-coordinate to HUDSCREEN_HEIGHT if it goes below the bottom.
             if (e->y > HUDSCREEN_HEIGHT)
             {
                 e->y = HUDSCREEN_HEIGHT;
@@ -895,35 +843,29 @@ static void clipEnemies(void)
     printf("All enemy positions clipped within the screen.\n");
 }
 
-/* Fighter Collision Behaviour. */
 static void checkPlayerEnemyCollisions(void)
 {
     Entity *e;
 
     for (e = stage.fighterHead.next; e != NULL; e = e->next)
     {
-        // Check collision between enemies and the player.
         if (e != player && player != NULL && collision(player->x, player->y, player->w, player->h, e->x, e->y, e->w, e->h))
         {
-            // Both player and enemy collided, set their health to 0.
             player->health = 0;
             e->health = 0;
 
-            // Add explosions for player and enemy collision.
             int i;
             for (i = 0; i <= 76; i++) // 76.25 frames (human reaction time on average).
             { 
                 playSound(SND_PLAYER_DIE, CH_ANY);
-                addExplosions(e->x, e->y, 4); // Add 4 explosions per frame for a dramatic effect.
+                addExplosions(e->x, e->y, 4);
             }
         }
     }
 
-    // Fighter collision checked.
     printf("Fighter collision check completed.\n");
 }
 
-/* Explosion Behaviour. */
 static void doExplosions(void)
 {
     Explosion *e, *prev;
@@ -932,14 +874,11 @@ static void doExplosions(void)
 
     for (e = stage.explosionHead.next; e != NULL; e = e->next)
     {
-        // Update explosion position based on its velocity.
         e->x += e->dx;
-        e->y -= e->dy; // Assuming dy is negative to move the explosion upwards.
+        e->y -= e->dy;
 
-        // Decrease the alpha (a) value to fade out the explosion effect over time.
         if (--e->a <= 0)
         {
-            // Remove the explosion entity from the list when its alpha value reaches 0.
             if (e == stage.explosionTail)
             {
                 stage.explosionTail = prev;
@@ -952,11 +891,9 @@ static void doExplosions(void)
         prev = e;
     }
 
-    // Explosions updated.
     printf("Explosions updated.\n");
 }
 
-/* Debris Behaviour. */
 static void doDebris(void)
 {
 	Debris *d, *prev;
@@ -986,11 +923,9 @@ static void doDebris(void)
 		prev = d;
 	}
 
-    // Debris updated.
     printf("Debris updated.\n");
 }
 
-/* Trail behaviour. */
 static void dotrails(void)
 {
     trail *e, *prev;
@@ -1016,11 +951,9 @@ static void dotrails(void)
         prev = e;
     }
 
-    // Trails updated.
     printf("Trails updated.\n");
 }
 
-/* Fire Behaviour. */
 static void dofire(void)
 {
     fire *f, *prev;
@@ -1050,11 +983,9 @@ static void dofire(void)
         prev = f;
     }
 
-    // Fire updated.
     printf("Fire updated.\n");
 }
 
-/* Rendering Fighters. */
 static void drawFighters(void)
 {
     Entity *e;
@@ -1064,11 +995,9 @@ static void drawFighters(void)
         blit(e->texture, e->x, e->y);
     }
 
-    // Fighters rendered.
     printf("Fighters rendered.\n");
 }
 
-/* Rendering Bullets. */
 static void drawBullets(void)
 {
     Entity *b;
@@ -1078,11 +1007,9 @@ static void drawBullets(void)
         blit(b->texture, b->x, b->y);
     }
 
-    // Bullets rendered.
     printf("Bullets rendered.\n");
 }
 
-/* Rendering Debris. */
 static void drawDebris(void)
 {
     Debris *d;
@@ -1092,33 +1019,26 @@ static void drawDebris(void)
         blitRect(d->texture, &d->rect, d->x, d->y);
     }
 
-    // Debris rendered.
     printf("Debris rendered.\n");
 }
 
-/* Rendering Explosions. */
 static void drawExplosions(void)
 {
     Explosion *e;
 
-    // Set blend mode for additive color blending.
     SDL_SetRenderDrawBlendMode(app.renderer, SDL_BLENDMODE_ADD);
     SDL_SetTextureBlendMode(explosionTexture, SDL_BLENDMODE_ADD);
 
     for (e = stage.explosionHead.next; e != NULL; e = e->next)
     {
-        // Set explosion texture color and alpha modulation.
         SDL_SetTextureColorMod(explosionTexture, e->r, e->g, e->b);
         SDL_SetTextureAlphaMod(explosionTexture, e->a);
 
-        // Render the explosion.
         blit(explosionTexture, e->x, e->y);
     }
 
-    // Reset blend mode to default (none).
     SDL_SetRenderDrawBlendMode(app.renderer, SDL_BLENDMODE_NONE);
 
-    // Explosions rendered.
     printf("Explosions rendered.\n");
 }
 
@@ -1126,44 +1046,33 @@ static void drawtrails(void)
 {
     trail *e;
 
-    // Set blend mode for additive color blending.
     SDL_SetRenderDrawBlendMode(app.renderer, SDL_BLENDMODE_ADD);
     SDL_SetTextureBlendMode(trailTexture, SDL_BLENDMODE_ADD);
 
     for (e = stage.trailHead.next; e != NULL; e = e->next)
     {
-        // Set trail texture color and alpha modulation.
         SDL_SetTextureColorMod(trailTexture, e->r, e->g, e->b);
         SDL_SetTextureAlphaMod(trailTexture, e->a);
 
-        // Render the trail.
         blit(trailTexture, e->x, e->y);
     }
-
-    // Reset blend mode to default (none).
     SDL_SetRenderDrawBlendMode(app.renderer, SDL_BLENDMODE_NONE);
 
-    // Trails rendered.
     printf("Trails rendered.\n");
 }
 
-/* Rendering Fire. */
 static void drawfire(void)
 {
     fire *f;
 
     for (f = stage.fireHead.next; f != NULL; f = f->next)
     {
-        // Render the fire using a specified rect for texture cropping.
         blitRect(fireTexture, &f->rect, f->x, f->y);
     }
 
-    // Fire rendered.
     printf("Fire rendered.\n");
 }
 
-
-/* Rendering the Point Spheres. */
 static void drawPointsSphere(void)
 {
     Entity *e;
@@ -1174,13 +1083,10 @@ static void drawPointsSphere(void)
         int POINT_RESULT;
         POINTHEALTH = e->health;
 
-        // Render the point sphere at its current position.  
         blit(e->texture, e->x, e->y);
 
-        // Draw text to show the health value of the point sphere (optional).
         //drawText(e->x, e->y, 255, 255, 255, "Health: %d", POINTHEALTH);
 
-        // Determine the point value and update the point result buffer based on the point sphere's health.
         switch (POINTHEALTH)
         {
         case 600:
@@ -1251,21 +1157,15 @@ static void drawPointsSphere(void)
             break;
         }
     }
-
-    // Point spheres rendered.
     printf("Point spheres rendered.\n");
 }
 
-/* HUD Text Rendering. */
 static void drawHudText(void)
 {
-    // Render the score text at the specified position.
     drawText(HUD_SCORE_POS_WIDTH, HUD_SCORE_POS_HEIGHT, 255, 255, 255, "SCORE: %03d", stage.score);
 
-    // HUD Health
     int HUDHEALTH;
 
-    // Check if the player exists and get its health value.
     if (player == NULL)
     {
         HUDHEALTH = 0;
@@ -1275,7 +1175,6 @@ static void drawHudText(void)
         HUDHEALTH = player->health;
     }
 
-    // Update the HUD_HEALTH_BUFFER based on the player's health.
     switch (HUDHEALTH)
     {
     case 25:
@@ -1337,10 +1236,8 @@ static void drawHudText(void)
         break;
     }
 
-    // Render the HUD health text at the specified position with the appropriate color.
     drawText(HUD_HEALTH_POS_WIDTH, HUD_HEALTH_POS_HEIGHT, HUD_HEALTH_BUFFER[0], HUD_HEALTH_BUFFER[1], HUD_HEALTH_BUFFER[2], "HEALTH: %03d", HUDHEALTH);
 
-    // Render the high score text at the specified position with a different color depending on whether the score is greater than 0.
     if (stage.score > 0)
     {
         drawText(HUD_HIGHSCORE_POS_WIDTH, HUD_HIGHSCORE_POS_HEIGHT, 0, 255, 0, "HIGH SCORE: %03d", stage.score);
@@ -1349,51 +1246,24 @@ static void drawHudText(void)
     {
         drawText(HUD_HIGHSCORE_POS_WIDTH, HUD_HIGHSCORE_POS_HEIGHT, 255, 255, 255, "HIGH SCORE: %03d", stage.score);
     }
-    // HUD Text rendered.
+
     printf("HUD text rendered.\n");
 }
 
-/* Basic Sorting for Rendering. */
 static void draw(void)
 {
-    // Draw the background first.
     drawBackground();
-
-    // Draw stars on top of the background.
     drawStars();
-
-    // Draw the points spheres on top of the stars.
     drawPointsSphere();
-
-    // Draw the fighters (player and enemies) on top of the points spheres.
     drawFighters();
-
-    // Draw debris on top of the fighters.
     drawDebris();
-
-    // Draw explosions on top of the debris.
     drawExplosions();
-
-    // Draw trails on top of the explosions.
     drawtrails();
-
-    // Draw fire on top of the trails.
     drawfire();
-
-    // Draw bullets on top of the fire.
     drawBullets();
-
-    // Draw the HUD on top of everything else.
     drawHud();
-
-    // Draw HUD text on top of the HUD.
     drawHudText();
-
-    // Draw HUD effects on top of HUD text.
     drawHudEffects();
 
-    // All rendering completed.
     printf("Rendering completed.\n");
 }
-
-/* ---------- */

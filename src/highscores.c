@@ -1,8 +1,7 @@
 /*
-Copyright (C) 2023-2024 Asephri. All rights reserved.
+Copyright (C) 2023-2025 Asephri.net. All rights reserved.
 */
 
-/* Headers. */
 #include "common.h"
 #include "background.h"
 #include "highscores.h"
@@ -11,11 +10,9 @@ Copyright (C) 2023-2024 Asephri. All rights reserved.
 #include "hud.h"
 #include "title.h"
 
-/* Externs. */
 extern App app;
 extern Highscores highscores;
 
-/* Functions. */
 static void logic(void);
 static void draw(void);
 static int highscoreComparator(const void *a, const void *b);
@@ -24,37 +21,30 @@ static void doNameInput(void);
 static void drawNameInput(void);
 static void saveHighscores(const char* filename);
 
-/* Variables. */
 static Highscore* newHighscore;
 static int cursorBlink;
 static int timeout;
 
-/* Creating Highscores metadata. */
-
-/* Loading Highscores from file. */
 void loadHighscores(const char* filename, Highscores* highscores)
 {
-    FILE* file = fopen(filename, "r"); // Open the file in read mode.
+    FILE* file = fopen(filename, "r");
     if (file == NULL)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error opening highscores file: %s\n", filename);
         return;
     }
 
-    int i = 0; // Counter to keep track of the highscores read.
+    int i = 0;
     while (i < NUM_HIGHSCORES && fscanf(file, "%49s %d", highscores->highscore[i].name, &highscores->highscore[i].score) == 2)
     {
-        // Read each line from the file and store the name and score in the 'highscores' array
-        i++; // Move to the next position in the 'highscores' array
+        i++;
     }
 
     fclose(file);
 
-    // Console message
     printf("Highscores loaded from file: %s\n", filename);
 }
 
-/* Saving Highscores to file. */
 static void saveHighscores(const char* filename)
 {
     FILE* file = fopen(filename, "w");
@@ -64,7 +54,6 @@ static void saveHighscores(const char* filename)
         return;
     }
 
-    // Write highscores to the file
     for (int i = 0; i < NUM_HIGHSCORES; i++) 
     {
         fprintf(file, "%s %d\n", highscores.highscore[i].name, highscores.highscore[i].score);
@@ -72,13 +61,9 @@ static void saveHighscores(const char* filename)
 
     fclose(file);
 
-    // Console message
     printf("Highscores saved to file: %s\n", filename);
 }
 
-/* ----- Creating the Highscore Table ----- */
-
-/* Initializing the Highscores table. */
 void initHighscoreTable(void)
 {
     int i;
@@ -95,7 +80,6 @@ void initHighscoreTable(void)
     cursorBlink = 0;
 }
 
-/* Initializing Highscores. */
 void initHighscores(void)
 {
     app.delegate.logic = logic;
@@ -105,7 +89,6 @@ void initHighscores(void)
     loadHighscores("highscores.txt", &highscores);
 }
 
-/* Local file logic. */
 static void logic(void)
 {
     doBackground();
@@ -137,7 +120,6 @@ static void logic(void)
     }
 }
 
-/* User name input. */
 static void doNameInput(void)
 {
     int i, n;
@@ -168,14 +150,13 @@ static void doNameInput(void)
             STRNCPY(newHighscore->name, "PLYR", MAX_SCORE_NAME_LENGTH);
         }
 
-        saveHighscores("highscores.txt"); // Save data.
+        saveHighscores("highscores.txt");
 
         newHighscore = NULL;
     }
     
 }
 
-/* Local draw logic. */
 static void draw(void)
 {
     drawBackground();
@@ -198,7 +179,6 @@ static void draw(void)
     }
 }
 
-/* Rendering Name Input. */
 static void drawNameInput(void)
 {
     doHudInputscore();
@@ -225,7 +205,6 @@ static void drawNameInput(void)
     drawText(355, 448, 255, 255, 255, "HIT ENTER WHEN DONE.");
 }
 
-/* Rendering Highscores. */
 static void drawHighscores(void)
 {
     doHudscore();
@@ -255,7 +234,6 @@ static void drawHighscores(void)
     drawText(315, 600, 255, 255, 255, "PRESS RIGHT CTRL TO PLAY!");
 }
 
-/* Adding Highscores. */
 void addHighscore(int score)
 {
     Highscore newHighscores[NUM_HIGHSCORES + 1];
@@ -290,7 +268,6 @@ void addHighscore(int score)
     printf("Highscore added.\n");
 }
 
-/* Returning a positive or negative integer for the qsort. */
 static int highscoreComparator(const void *a, const void *b)
 {
     Highscore *h1 = ((Highscore*)a);
