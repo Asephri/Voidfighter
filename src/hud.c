@@ -99,7 +99,7 @@ void drawHudEffects(void)
     SDL_Rect dest;
     dest.x = 0;
     dest.y = SCREEN_HEIGHT - HUD_HEIGHT;
-    dest.w = 320;
+    dest.w = SCREEN_WIDTH;
     dest.h = 128;
 
     SDL_RenderCopy(app.renderer, hudeffects, NULL, &dest);

@@ -18,7 +18,7 @@ void initStars(void)
     for (i = 0; i < MAX_STARS; i++)
     {
         stars[i].x = rand() % SCREEN_WIDTH;
-        stars[i].y = rand() % (SCREEN_HEIGHT - HUD_HEIGHT);
+        stars[i].y = rand() % (SCREEN_HEIGHT);
         stars[i].speed = 1 + rand() % 8;
     }
     //printf("Stars initialized.\n");
@@ -90,7 +90,7 @@ void drawBackground(void)
         dest.x = x;
         dest.y = 0;
         dest.w = SCREEN_WIDTH;
-        dest.h = (SCREEN_HEIGHT - HUD_HEIGHT);
+        dest.h = SCREEN_HEIGHT;
 
         SDL_RenderCopy(app.renderer, background, NULL, &dest);
     }

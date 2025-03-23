@@ -1,5 +1,5 @@
 # CMakeLists.txt
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_GENERATOR "Ninja")
 message("generator is set to ${CMAKE_GENERATOR}")
@@ -8,7 +8,7 @@ project(Voidfighter)
 
 include(FindPkgConfig)
 
-pkg_search_module(SDL2 REQUIRED sdl2)
+pkg_search_module(SDL2 REQUI-RED sdl2)
 pkg_search_module(SDL2_MIXER REQUIRED SDL2_mixer)
 pkg_search_module(SDL2_IMAGE REQUIRED SDL2_image)
 pkg_search_module(SDL2_TTF REQUIRED SDL2_ttf)

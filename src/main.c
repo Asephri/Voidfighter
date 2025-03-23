@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 
 	printf("voidFighter - New Session\n");
 	
-	printf("Copyright (C) 2023-2024 Asephri. All rights reserved.\n");
+	printf("Copyright (C) 2023-2025 Asephri.net. All rights reserved.\n");
 
 	printf("consolelog.txt\n");
 	
