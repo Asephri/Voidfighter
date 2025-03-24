@@ -1,4 +1,6 @@
 # Voidfighter
+The game folders contents need to be extracted and exist in the same directory to work.
+
 A 2D Shooter game built in c with sdl.
 
 I followed a tutorial as this was my first time using c and the sdl library, a step up from modding stellaris or minecraft.
